@@ -1,0 +1,60 @@
+---
+- hosts: localhost
+  name: Create AWS infrastructure with Terraforms
+  vars:
+    terraform_dir: /Users/philip/Git/ansible_terraform
+ 
+  tasks:
+    - name: Create AWS instances with Terraform
+      terraform:
+        project_path: "{{ terraform_dir }}"
+        state: present
+      register: outputs
+ 
+    - name: Add all instance public DNS to host group
+      add_host: 
+        name: "{{ item }}" 
+        groups: ec2instances
+      loop: "{{ outputs.outputs.address.value }}"
+ 
+- hosts: ec2instances
+  name: Do something with instances
+  user: ec2-user
+  become: yes
+  gather_facts: false
+ 
+  tasks:
+    - name: testing
+      wait_for_connection:
+        delay: 60
+        timeout: 600
+
+    - name: Register to Redhat 
+      redhat_subscription:
+        state: present
+        username: brooksphilip
+        password: Typhoonss1
+        auto_attach: true
+
+    - name: Install httpd
+      yum:
+        name: httpd
+        state: present
+
+ #   - name: set up firewall
+ #     firewalld:
+ #       port: 80/tcp
+ #       permanent: true
+ #       enabled: true
+
+    - name: start httpd
+      service:
+        name: httpd
+        state: started
+        enabled: true
+
+    - name: disable iptables
+      service:
+        name: iptables
+        state: stopped
+        enabled: false
