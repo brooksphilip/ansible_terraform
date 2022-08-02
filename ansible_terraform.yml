@@ -32,7 +32,7 @@
     - name: Register to Redhat 
       redhat_subscription:
         state: present
-        username: brooksphilip
+        username: <username>
         password: <password>
         auto_attach: true
 
